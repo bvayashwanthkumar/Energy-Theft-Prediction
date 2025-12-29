@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Energy Theft Prediction</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+        input {
+            margin: 5px;
+            padding: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 8px 15px;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Energy Theft Prediction</h2>
+
+    <input type="number" step="any" id="gap" placeholder="Global Active Power"><br>
+    <input type="number" step="any" id="grp" placeholder="Global Reactive Power"><br>
+    <input type="number" step="any" id="voltage" placeholder="Voltage"><br>
+    <input type="number" step="any" id="gi" placeholder="Global Intensity"><br>
+    <input type="number" step="any" id="rmp" placeholder="Rolling Mean Power"><br>
+    <input type="number" step="any" id="rsp" placeholder="Rolling Std Power"><br>
+    <input type="number" step="any" id="pvr" placeholder="Power Voltage Ratio"><br>
+    <input type="number" step="any" id="rar" placeholder="Reactive Active Ratio"><br>
+    <input type="number" step="any" id="peak" placeholder="Is Peak Hour (0/1)"><br>
+    <input type="number" step="any" id="weekend" placeholder="Is Weekend (0/1)"><br>
+
+    <button onclick="predict()">Predict Theft</button>
+
+    <div id="result"></div>
+
+    <script>
+        function predict() {
+            const data = {
+                Global_active_power: parseFloat(document.getElementById("gap").value),
+                Global_reactive_power: parseFloat(document.getElementById("grp").value),
+                Voltage: parseFloat(document.getElementById("voltage").value),
+                Global_intensity: parseFloat(document.getElementById("gi").value),
+                Rolling_mean_power: parseFloat(document.getElementById("rmp").value),
+                Rolling_std_power: parseFloat(document.getElementById("rsp").value),
+                Power_voltage_ratio: parseFloat(document.getElementById("pvr").value),
+                Reactive_active_ratio: parseFloat(document.getElementById("rar").value),
+                Is_peak_hour: parseInt(document.getElementById("peak").value),
+                is_weekend: parseInt(document.getElementById("weekend").value)
+            };
+
+            fetch("http://127.0.0.1:5000/predict-theft", {
+
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.theft_prediction === 1) {
+                    document.getElementById("result").innerText =
+                        "⚠️ Theft Risk Detected";
+                } else {
+                    document.getElementById("result").innerText =
+                        "✅ Normal Consumption";
+                }
+            })
+            .catch(error => {
+                document.getElementById("result").innerText =
+                    "Error connecting to server";
+            });
+        }
+    </script>
+
+</body>
+</html>
